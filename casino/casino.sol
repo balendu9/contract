@@ -294,6 +294,7 @@ contract Casino is Ownable {
 
         // Record the game play
         recordGamePlay(1, msg.sender, betAmount, CalculateReward);
+        
     }
 
 
