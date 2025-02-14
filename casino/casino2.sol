@@ -150,30 +150,30 @@ contract Casino {
         // update leaderboard
 
         if (reward > _amountPaid) {
-    for (uint8 i = 0; i < 10; i++) {
-        if (reward > topWinners[i].amount) {
-            // Shift lower-ranked players down
-            for (uint8 j = 9; j > i; j--) {
-                topWinners[j] = topWinners[j - 1];  // Corrected shift
+            for (uint8 i = 0; i < 10; i++) {
+                if (reward > topWinners[i].amount) {
+                    // Shift lower-ranked players down
+                    for (uint8 j = 9; j > i; j--) {
+                        topWinners[j] = topWinners[j - 1];  // Corrected shift
+                }
+                // Insert the new winner
+                topWinners[i] = PlayerStats(_playeraddress, reward, _gameId);
+                break;  // Important: Stop after inserting
             }
-            // Insert the new winner
-            topWinners[i] = PlayerStats(_playeraddress, reward, _gameId);
-            break;  // Important: Stop after inserting
         }
-    }
-} else {
-    for (uint8 i = 0; i < 10; i++) {
-        if (_amountPaid > topLosers[i].amount) {
-            // Shift lower-ranked losers down
-            for (uint8 j = 9; j > i; j--) {
-                topLosers[j] = topLosers[j - 1];  // Corrected shift
+        } else {
+            for (uint8 i = 0; i < 10; i++) {
+                if (_amountPaid > topLosers[i].amount) {
+                    // Shift lower-ranked losers down
+                    for (uint8 j = 9; j > i; j--) {
+                    topLosers[j] = topLosers[j - 1];  // Corrected shift
+                }
+                // Insert the new loser
+                topLosers[i] = PlayerStats(_playeraddress, _amountPaid - reward, _gameId);
+                break;  // Stop after inserting
             }
-            // Insert the new loser
-            topLosers[i] = PlayerStats(_playeraddress, _amountPaid - reward, _gameId);
-            break;  // Stop after inserting
         }
-    }
-}
+        }
 
      
         
