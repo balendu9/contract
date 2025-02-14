@@ -148,6 +148,32 @@ contract Casino {
             todayStats.uniquePlayers += 1;
         }
 
+
+        // update leaderboard
+
+        if (reward > _amountPaid) {
+            for(uint8 i =0; i < 10; i++) {
+                if (reward > topWinners[i].amount) {
+                    for (uint8 j = 9; j > i; j--) {
+                        topWinners[j] = topWinners[j-i];
+                    }
+
+                    topWinners[i] = PlayerStats(_playeraddress, reward, _gameId);
+                    
+                }
+            }
+        } else {
+            for(uint8 i =0; i < 10; i++) {
+                if (_amountPaid > topLosers[i].amount) {
+                    for (uint8 j = 9; j > i; j--) {
+                        topLosers[j] = topLosers[j-i];
+                    }
+
+                    topLosers[i] = PlayerStats(_playeraddress, _amountPaid, _gameId);
+                    
+                }
+            }
+        }
      
         
     }
