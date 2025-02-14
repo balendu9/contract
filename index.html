@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keno Game</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        canvas { background: #f3f3f3; display: block; margin: auto; cursor: pointer; }
+        .controls { margin: 20px; }
+        .result { font-size: 18px; margin-top: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Keno Game</h1>
+    <canvas id="kenoCanvas" width="500" height="500"></canvas>
+    <div class="controls">
+        <input type="number" id="betAmount" placeholder="Enter bet amount ($)" min="1">
+        <button onclick="playKeno()">Play</button>
+    </div>
+    <p class="result" id="result"></p>
+
+    <script>
+        const canvas = document.getElementById("kenoCanvas");
+        const ctx = canvas.getContext("2d");
+        const gridSize = 10;
+        const cellSize = 50;
+        let selectedNumbers = [];
+        let winningNumbers = [];
+        
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    let num = i * gridSize + j + 1;
+                    ctx.fillStyle = selectedNumbers.includes(num) ? "#4CAF50" : "white";
+                    ctx.fillRect(j * cellSize, i * cellSize, cellSize - 2, cellSize - 2);
+                    ctx.strokeRect(j * cellSize, i * cellSize, cellSize, cellSize);
+                    ctx.fillStyle = "black";
+                    ctx.font = "16px Arial";
+                    ctx.fillText(num, j * cellSize + 15, i * cellSize + 30);
+                }
+            }
+        }
+
+        canvas.addEventListener("click", function(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            const row = Math.floor(y / cellSize);
+            const col = Math.floor(x / cellSize);
+            let num = row * gridSize + col + 1;
+            
+            if (selectedNumbers.includes(num)) {
+                selectedNumbers = selectedNumbers.filter(n => n !== num);
+            } else if (selectedNumbers.length < 10) {
+                selectedNumbers.push(num);
+            }
+            drawGrid();
+        });
+
+        function getRandomNumbers() {
+            let numbers = [];
+            while (numbers.length < 10) {
+                let num = Math.floor(Math.random() * 100) + 1;
+                if (!numbers.includes(num)) numbers.push(num);
+            }
+            return numbers;
+        }
+
+        function playKeno() {
+            if (selectedNumbers.length !== 10) {
+                alert("Please select exactly 10 numbers!");
+                return;
+            }
+            let betAmount = parseFloat(document.getElementById("betAmount").value);
+            if (isNaN(betAmount) || betAmount <= 0) {
+                alert("Enter a valid bet amount!");
+                return;
+            }
+            winningNumbers = getRandomNumbers();
+            let matches = selectedNumbers.filter(num => winningNumbers.includes(num)).length;
+            let payoutMultiplier = {5:2, 6:3, 7:4, 8:5, 9:6, 10:20}[matches] || 0;
+            let winnings = betAmount * payoutMultiplier;
+            let resultText = `Winning Numbers: ${winningNumbers.join(", ")} | Matches: ${matches} | ` + 
+                             (winnings > 0 ? `You win $${winnings.toFixed(2)}!` : "No winnings, try again!");
+            document.getElementById("result").innerText = resultText;
+        }
+
+        drawGrid();
+    </script>
+</body>
+</html>

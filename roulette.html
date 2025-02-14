@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roulette Game</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        .wheel-container { position: relative; display: inline-block; margin: 20px; }
+        .wheel { width: 300px; height: 300px; border-radius: 50%; border: 5px solid black; transition: transform 3s ease-out; }
+        .spin-btn { margin-top: 20px; padding: 10px 20px; font-size: 18px; cursor: pointer; }
+        .result { font-size: 18px; margin-top: 10px; font-weight: bold; }
+        table { margin: 20px auto; border-collapse: collapse; width: 50%; }
+        th, td { border: 1px solid black; padding: 10px; text-align: center; }
+        th { background-color: #4CAF50; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Roulette Game</h1>
+    <div class="wheel-container">
+        <canvas id="rouletteCanvas" class="wheel" width="300" height="300"></canvas>
+    </div>
+    <div>
+        <input type="number" id="betAmount" placeholder="Enter bet amount ($)" min="1">
+        <select id="betType">
+            <option value="red">Red (2x)</option>
+            <option value="black">Black (2x)</option>
+            <option value="even">Even (2x)</option>
+            <option value="odd">Odd (2x)</option>
+            <option value="single">Single Number (35x)</option>
+        </select>
+        <input type="number" id="singleNumber" placeholder="0-36" min="0" max="36" disabled>
+        <button class="spin-btn" onclick="spinRoulette()">Spin</button>
+    </div>
+    <table>
+        <tr>
+            <th>Bet Type</th>
+            <th>Multiplier</th>
+        </tr>
+        <tr><td>Red/Black</td><td>2x</td></tr>
+        <tr><td>Even/Odd</td><td>2x</td></tr>
+        <tr><td>Single Number</td><td>35x</td></tr>
+    </table>
+    <p class="result" id="result"></p>
+    <script>
+        const canvas = document.getElementById("rouletteCanvas");
+        const ctx = canvas.getContext("2d");
+        const numbers = Array.from({ length: 37 }, (_, i) => i);
+        const colors = numbers.map(n => (n === 0 ? "green" : n % 2 === 0 ? "black" : "red"));
+        let angle = 0;
+
+        function drawWheel() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const center = canvas.width / 2;
+            const radius = center - 5;
+            const angleStep = (2 * Math.PI) / numbers.length;
+            
+            numbers.forEach((num, i) => {
+                ctx.beginPath();
+                ctx.moveTo(center, center);
+                ctx.arc(center, center, radius, i * angleStep, (i + 1) * angleStep);
+                ctx.fillStyle = colors[i];
+                ctx.fill();
+                ctx.stroke();
+                ctx.fillStyle = "white";
+                ctx.fillText(num, center + Math.cos(i * angleStep + angleStep / 2) * radius * 0.7, center + Math.sin(i * angleStep + angleStep / 2) * radius * 0.7);
+            });
+        }
+
+        document.getElementById("betType").addEventListener("change", function() {
+            document.getElementById("singleNumber").disabled = this.value !== "single";
+        });
+
+        function spinRoulette() {
+            let betAmount = parseFloat(document.getElementById("betAmount").value);
+            let betType = document.getElementById("betType").value;
+            let singleNumber = parseInt(document.getElementById("singleNumber").value);
+            
+            if (isNaN(betAmount) || betAmount <= 0) {
+                alert("Enter a valid bet amount!");
+                return;
+            }
+            if (betType === "single" && (isNaN(singleNumber) || singleNumber < 0 || singleNumber > 36)) {
+                alert("Enter a valid number between 0 and 36!");
+                return;
+            }
+            
+            let winningNumber = numbers[Math.floor(Math.random() * numbers.length)];
+            let winningColor = colors[winningNumber];
+            let payout = 0;
+            let spins = Math.floor(Math.random() * 10) + 10;
+            angle += spins * 360 + (winningNumber * (360 / 37));
+            canvas.style.transform = `rotate(${angle}deg)`;
+            
+            setTimeout(() => {
+                if ((betType === "red" && winningColor === "red") || (betType === "black" && winningColor === "black") ||
+                    (betType === "even" && winningNumber % 2 === 0 && winningNumber !== 0) ||
+                    (betType === "odd" && winningNumber % 2 !== 0) ||
+                    (betType === "single" && winningNumber === singleNumber)) {
+                    payout = betType === "single" ? betAmount * 35 : betAmount * 2;
+                }
+                document.getElementById("result").innerText = `Winning Number: ${winningNumber} (${winningColor}) | ` +
+                    (payout > 0 ? `You win $${payout.toFixed(2)}!` : "No winnings, try again!");
+            }, 3000);
+        }
+
+        drawWheel();
+    </script>
+</body>
+</html>
